@@ -1,0 +1,3 @@
+method,train_mse,val_mse,time_sec
+Normal equation,4692.33,1056.46,0.0009139
+Gradient descent,4692.33,1056.46,0.142849
