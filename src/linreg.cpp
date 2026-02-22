@@ -34,7 +34,7 @@ namespace ml
         return s / static_cast<double>(y.size());
     }
 
-    // ---------- helper: parallel gradient over features ----------
+// parallel grad helper
     static VecN grad_mse_par(const Mat &X,
                              const VecN &y,
                              const VecN &yhat)
@@ -57,7 +57,7 @@ namespace ml
         return grad;
     }
 
-    // Normal equation: solve (XtX) w = Xty
+// Normal equation solve
     VecN normal_equation(const Mat &X, const VecN &y)
     {
         if (X.empty())
@@ -132,7 +132,7 @@ namespace ml
                 grad[j] = (2.0 / static_cast<double>(n)) * s;
             }
 #endif
-            // ---- convergence check
+// ---- convergence check
             double gnorm2 = 0.0;
             for (double g : grad)
                 gnorm2 += g * g;

@@ -84,9 +84,7 @@ namespace ml
         return y;
     }
 
-    // ===========================================================
-    //  Parallel helpers  (require -DUSE_PAR to be used by user)
-    // ===========================================================
+//  Parallel helpers  (require -DUSE_PAR to be used by user)
 
     double inner_prod_par(const VecN &a, const VecN &b)
     {
@@ -145,8 +143,8 @@ namespace ml
         return C;
     }
 
-    // Solves A w = b via Gaussian elimination with partial pivoting.
-    // Input A, b are copied (passed by value in header), so caller stays unchanged.
+// Solves A w = b via Gaussian elimination with partial pivoting.
+// Input A, b are copied (passed by value in header), so caller stays unchanged.
     VecN solve_gauss(Mat A, VecN b)
     {
         const size_t n = A.size();

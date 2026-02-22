@@ -19,9 +19,8 @@ target_include_directories(ml
     PUBLIC ${CMAKE_SOURCE_DIR}/include
 )
 
-# ------------------------------------------------------------
 #  Optional parallel-STL switch (default = ON)
-# ------------------------------------------------------------
+
 option(ENABLE_PAR "Build with C++17 parallel algorithms" ON)
 
 if(ENABLE_PAR)

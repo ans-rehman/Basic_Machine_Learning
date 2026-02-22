@@ -37,7 +37,6 @@ namespace ml
 
         auto headers = split_csv(headerLine);
 
-        // Precompute skip mask for O(1) checks
         std::vector<bool> skip(headers.size(), false);
         for (size_t idx : skip_cols)
         {
@@ -45,7 +44,7 @@ namespace ml
                 skip[idx] = true;
         }
 
-        // Fill kept headers (numeric columns only)
+// Fill kept headers (numeric columns only)
         if (kept_headers)
         {
             kept_headers->clear();
@@ -66,7 +65,6 @@ namespace ml
             auto row = split_csv(line);
             if (row.size() != headers.size())
             {
-                // If you want strict mode, throw. For now, skip malformed lines.
                 continue;
             }
 

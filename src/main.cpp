@@ -23,7 +23,7 @@ struct Config
     int max_degree = 6;
     int ridge_degree = 4;
 
-    // After standardization, larger alpha is stable
+    // After standardization, zero mean
     double gd_alpha = 1e-2;
     int gd_iters = 3000;
 
@@ -35,7 +35,7 @@ struct Config
     std::vector<double> lambdas = {0.0, 1e-6, 1e-4, 1e-2, 1e-1, 1.0, 10.0, 100.0, 1000.0};
 };
 
-// -------------------- Helpers --------------------
+// Helper functions
 static void train_val_split(const ml::Mat &X, const ml::VecN &y,
                             double val_ratio,
                             ml::Mat &Xtr, ml::VecN &ytr,
@@ -94,7 +94,7 @@ void summarize_dataset(const ml::Mat &X, const std::vector<std::string> &headers
     std::ofstream csv("results/column_summary.csv");
     csv << "feature,count,mean,variance,stddev\n";
 
-    std::cout << "=========== Dataset summary ===========" << std::fixed << std::setprecision(4) << "\n";
+    std::cout << "-------------- Dataset summary ------------" << std::fixed << std::setprecision(4) << "\n";
 
     for (size_t j = 0; j < d; ++j)
     {
@@ -118,7 +118,7 @@ void summarize_dataset(const ml::Mat &X, const std::vector<std::string> &headers
             << var << ','
             << sd << '\n';
     }
-    std::cout << "=======================================\n";
+    std::cout << "----------------------------------\n";
 }
 
 // Build regression dataset: y = "area" and X = all other numeric cols
@@ -137,7 +137,7 @@ static void build_Xy_area(const ml::Mat &numeric_all, ml::Mat &X, ml::VecN &y)
     {
         for (size_t j = 0; j < d - 1; j++)
             X[i][j] = numeric_all[i][j];
-        y[i] = numeric_all[i][d - 1]; // last numeric column = area
+        y[i] = numeric_all[i][d - 1]; // last numeric column = area/target vector
     }
 }
 
@@ -195,7 +195,7 @@ static ml::Mat transform_standardize(const ml::Mat &X, const Standardizer &s)
     return Z;
 }
 
-// -------------------- Main --------------------
+// Main function
 int main()
 {
     try
@@ -207,10 +207,10 @@ int main()
 #endif
         Config cfg;
 
-        // Create results directory
+        // Create results directory for saving the figures, GP and csv files 
         std::filesystem::create_directories("results");
 
-        // Load numeric data (skip month/day)
+        // Load numeric data and skip month/day
         ml::VecS kept_headers;
         ml::Mat all_numeric = ml::load_numeric_matrix(cfg.dataset_path, {2, 3}, &kept_headers);
 
@@ -232,10 +232,9 @@ int main()
             Xva_raw = transform_standardize(Xva_raw, scaler);
         }
 
-        // =========================================================
-        // (A) Linear Regression Comparison: Normal Eq vs GD (degree 1)
-        // =========================================================
-        std::cout << "\n================ Linear Regression Comparison ================\n";
+// (A) Linear Regression Comparison: Normal Eq vs GD (degree 1)
+
+        std::cout << "\n**------------- Linear Regression Comparison ------------**\n";
 
         ml::Mat Xtr_lin = ml::add_bias(Xtr_raw);
         ml::Mat Xva_lin = ml::add_bias(Xva_raw);
@@ -285,9 +284,9 @@ int main()
             comp << "Gradient descent," << train_mse_gd << "," << val_mse_gd << "," << time_gd << "\n";
         }
 
-        // =========================================================
-        // (B) Plot 1: Train vs Val MSE vs Polynomial Degree
-        // =========================================================
+
+// (B) Plot 1: Train vs Val MSE vs Polynomial Degree
+
         std::vector<double> degrees, train_mse_deg, val_mse_deg;
         degrees.reserve(cfg.max_degree);
         train_mse_deg.reserve(cfg.max_degree);
@@ -316,10 +315,9 @@ int main()
                                                 "Polynomial Degree", "MSE",
                                                 "Train", "Validation");
 
-        // =========================================================
-        // (C) Plot 2: Train vs Val MSE vs Lambda (Ridge)
-        //  Weight norm vs lambda
-        // =========================================================
+// (C) Plot 2: Train vs Val MSE vs Lambda (Ridge)
+//  and Weight norm vs lambda
+
         ml::Mat Xtr_r = ml::add_bias(ml::poly_expand(Xtr_raw, cfg.ridge_degree));
         ml::Mat Xva_r = ml::add_bias(ml::poly_expand(Xva_raw, cfg.ridge_degree));
 
@@ -337,7 +335,7 @@ int main()
             wnorm_lam.push_back(l2_norm(w));
         }
 
-        // Error vs lambda
+// Error vs lambda
         ml::write_two_series_csv("results/mse_vs_lambda.csv",
                                  cfg.lambdas, train_mse_lam, val_mse_lam,
                                  "lambda", "train_mse", "val_mse");
@@ -349,7 +347,7 @@ int main()
                                                 "Lambda", "MSE",
                                                 "Train", "Validation");
 
-        // Weight norm vs lambda (NEW)
+// Weight norm vs lambda (NEW)
         ml::write_xy_csv("results/wnorm_vs_lambda.csv", cfg.lambdas, wnorm_lam, "lambda", "w_norm");
 
         ml::write_gnuplot_script_xy_png("results/wnorm_vs_lambda.gp",
@@ -358,9 +356,8 @@ int main()
                                         "Weight Norm vs Lambda (Ridge)",
                                         "Lambda", "||w||_2");
 
-        // =========================================================
-        // (D) Plot 3: GD convergence (loss vs iterations)
-        // =========================================================
+// (D) Plot 3: GD convergence (loss vs iterations)
+
         ml::Mat Xtr_gd = ml::add_bias(Xtr_raw);
 
         ml::VecN w_log(Xtr_gd[0].size(), 0.0);
@@ -399,9 +396,8 @@ int main()
                                         "Gradient Descent Convergence (Train MSE vs Iterations)",
                                         "Iteration", "Train MSE");
 
-        // =========================================================
-        // (E) Comparison plots (bars): Train MSE, Val MSE, Runtime
-        // =========================================================
+// (E) Comparison plots (bars): Train MSE, Val MSE, Runtime
+
         ml::write_gnuplot_script_bars_png("results/linear_train_mse.gp",
                                           "results/linear_comparison.csv",
                                           "results/linear_train_mse.png",
@@ -423,9 +419,8 @@ int main()
                                           "Time (seconds)",
                                           4, "Runtime (sec)");
 
-        // ------------------------------------------------------
-        //  Detailed weight comparison  (Normal Eq  vs  Gradient)
-        // ------------------------------------------------------
+//  Detailed weight comparison  (Normal Eq  vs  Gradient)
+
         {
             std::vector<double> idx_vec, abs_diff;
             idx_vec.reserve(w_ne.size());
@@ -446,7 +441,7 @@ int main()
                           << std::setw(12) << ad << "\n";
             }
 
-            // CSV 1: full weights
+// CSV 1: full weights
             ml::write_two_series_csv("results/weights_ne_vs_gd.csv",
                                      idx_vec, // x-axis = weight index
                                      std::vector<double>(w_ne.begin(), w_ne.end()),
@@ -460,7 +455,7 @@ int main()
                                                     "Weight index", "Value",
                                                     "w-NE", "w-GD");
 
-            // CSV 2: absolute differences
+// CSV 2: absolute differences
             ml::write_xy_csv("results/weights_absdiff.csv",
                              idx_vec, abs_diff, "index", "abs_diff");
 
@@ -472,9 +467,7 @@ int main()
                                               2, "abs diff"); // column 2 is abs_diff
         }
 
-        // =========================================================
-        // Run gnuplot scripts
-        // =========================================================
+// Run gnuplot scripts
         bool ok_deg = ml::run_gnuplot("results/mse_vs_degree.gp");
         bool ok_lam = ml::run_gnuplot("results/mse_vs_lambda.gp");
         bool ok_wnorm = ml::run_gnuplot("results/wnorm_vs_lambda.gp");
@@ -485,10 +478,8 @@ int main()
         bool ok_wpair = ml::run_gnuplot("results/weights_ne_vs_gd.gp");
         bool ok_wdiff = ml::run_gnuplot("results/weights_absdiff.gp");
 
-        // =========================================================
-        // Summary
-        // =========================================================
-        std::cout << "\n================ Results Summary ================\n";
+// Summary of the models
+        std::cout << "\n**-------------- Results Summary ---------------**\n";
 
         std::cout << "CSV files:\n";
         std::cout << "  results/linear_comparison.csv\n";
@@ -508,7 +499,7 @@ int main()
         std::cout << "  results/weights_ne_vs_gd.png  (" << (ok_wpair ? "OK" : "FAILED") << ")\n";
         std::cout << "  results/weights_absdiff.png   (" << (ok_wdiff ? "OK" : "FAILED") << ")\n";
 
-        std::cout << "=================================================\n\n";
+        std::cout << "**---------------------------***\n";
         return 0;
     }
     catch (const std::exception &e)

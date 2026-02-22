@@ -42,7 +42,7 @@ namespace ml
                                              const std::string &s1_name,
                                              const std::string &s2_name);
 
-    // Optional: run gnuplot script (returns true if command succeeded)
+    // run gnuplot script (returns true if command succeeded)
     bool run_gnuplot(const std::string &script_path);
 
     void write_gnuplot_script_bars_png(const std::string &script_path,

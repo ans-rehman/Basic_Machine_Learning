@@ -5,7 +5,7 @@
 namespace ml
 {
 
-    // Expand each feature x -> [x, x^2, ..., x^degree] (no cross terms)
+// Expand each feature x -> [x, x^2, ..., x^degree] (no cross terms)
     Mat poly_expand(const Mat &X, int degree)
     {
         if (degree < 1)
