@@ -26,14 +26,14 @@ All matrix/vector operations are built from nested `std::vector` ⟨double⟩.
 ├── include/ml/             ← public headers (matrix, linreg, poly, …)
 ├── src/                    ← implementation (.cpp)
 ├── results/                ← populated at runtime (CSV, .gp, .png)
-└── report.pdf              ← experiment write-up (LaTeX source in /doc)
+└── results_runs/           ← populated at runtime (CSV, .gp, .png) with time stamp for each run
 ```
 
 ## Optional: enable C++17 parallel STL
 
 ```
-cmake -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_PAR=ON
-cmake --build build -j
+cmake -B build -DENABLE_PAR=ON
+cmake --build build
 ```
 
 With ENABLE_PAR=ON the compiler is given -DUSE_PAR and the code paths
